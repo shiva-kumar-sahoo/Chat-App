@@ -4,26 +4,32 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./screens/chat/Home";
 import Signup from "./screens/auth/Signup";
 import Login from "./screens/auth/Login";
-import { AuthContext } from "./context/AuthContext";
+import AuthProvider, { AuthContext } from "./context/AuthContext";
+import { ActivityIndicator, View } from "react-native";
 
 const ChatStack = createStackNavigator();
 
 const HomeStack = () => {
-  <ChatStack.Navigator>
-    <ChatStack.Screen name="Home" component={Home} />
-  </ChatStack.Navigator>;
+  return (
+    <ChatStack.Navigator>
+      <ChatStack.Screen name="Home" component={Home} />
+    </ChatStack.Navigator>
+  );
 };
 
 const AuthStack = createStackNavigator();
 const AuthScreenStack = () => {
-  <AuthStack.Navigator>
-    <AuthStack.Screen name="Signup" component={Signup} />
-    <AuthStack.Screen name="Login" component={Login} />
-  </AuthStack.Navigator>;
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={Login} />
+      <AuthStack.Screen name="Signup" component={Signup} />
+    </AuthStack.Navigator>
+  );
 };
 
 const AuthCheck = () => {
-  const { isLoading, userToken } = useContext(AuthContext);
+  const { isLoading, userInfo } = useContext(AuthContext);
+
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -33,7 +39,7 @@ const AuthCheck = () => {
   }
   return (
     <NavigationContainer>
-      {userToken != null ? <HomeStack /> : <AuthScreenStack />}
+      {userInfo != null ? <HomeStack /> : <AuthScreenStack />}
     </NavigationContainer>
   );
 };
