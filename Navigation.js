@@ -6,13 +6,15 @@ import Signup from "./screens/auth/Signup";
 import Login from "./screens/auth/Login";
 import AuthProvider, { AuthContext } from "./context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import Message from "./screens/chat/Message";
 
 const ChatStack = createStackNavigator();
 
 const HomeStack = () => {
   return (
-    <ChatStack.Navigator>
+    <ChatStack.Navigator screenOptions={{ headerShown: false }}>
       <ChatStack.Screen name="Home" component={Home} />
+      <ChatStack.Screen name="Message" component={Message} />
     </ChatStack.Navigator>
   );
 };
