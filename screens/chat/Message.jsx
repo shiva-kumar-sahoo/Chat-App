@@ -1,13 +1,14 @@
 import { View, Text, Pressable, TextInput, FlatList } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MessageComponent from "../../components/MessageComponent";
-
+import { AuthContext } from "../../context/AuthContext";
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
   const [user, setUser] = useState("");
   const { name, id } = route.params;
-  let chats = [
+
+  const initialChats = [
     {
       id: "1",
       source: "from",
@@ -219,6 +220,9 @@ const Message = ({ route }) => {
       user: "Jhon",
     },
   ];
+  const { userInfo, socket } = useContext(AuthContext);
+  const [chatMessages, setChatMessages] = useState(initialChats);
+  const flatListRef = useRef(null);
   const getCurrentTime = () => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -226,19 +230,53 @@ const Message = ({ route }) => {
     return `${hours}:${minutes}`;
   };
   const handleSendBtn = () => {
-    console.log("clicked");
+    socket.emit("send-message", {
+      from: userInfo,
+      to: "email@email.com",
+      // to: userInfo,
+      message: message,
+    });
 
-    chats = [
-      ...chats,
-      {
-        id: 31,
-        source: "to",
-        text: message,
-        time: getCurrentTime(),
-        user: "Jhon",
-      },
-    ];
+    const newMessage = {
+      id: `${Date.now()}-${chatMessages.length + 1}`,
+      source: "to",
+      text: message,
+      time: getCurrentTime(),
+      user: "Jhon",
+    };
+
+    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+
+    setMessage("");
+    autoScrollToEnd();
   };
+  const autoScrollToEnd = () => {
+    flatListRef.current.scrollToEnd();
+  };
+  const handleReceiveMessage = (incomingMessage) => {
+    const newMessage = {
+      id: `${Date.now()}-${chatMessages.length + 1}`,
+      source: "from",
+      text: incomingMessage.message,
+      time: getCurrentTime(),
+      user: incomingMessage.from,
+    };
+    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    autoScrollToEnd();
+
+    return () => {
+      socket.off("received-message", handleReceiveMessage);
+    };
+  };
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("received-message", handleReceiveMessage);
+
+    return () => {
+      socket.off("received-message", handleReceiveMessage);
+    };
+  }, [socket]);
   return (
     <View className="flex-1">
       <View className="py-5 px-4 bg-green-200 rounded-b-2xl mb-4">
@@ -246,20 +284,25 @@ const Message = ({ route }) => {
           <Ionicons
             name="person-circle-outline"
             size={45}
-            color="black"
+            color="grey"
             className="mr-4"
           />
           <Text className="text-xl font-semibold">{name}</Text>
         </View>
       </View>
       <View className="flex-1">
-        {chats ? (
+        {initialChats ? (
           <FlatList
-            data={chats}
+            data={chatMessages}
             renderItem={({ item }) => (
               <MessageComponent item={item} user={user} />
             )}
             keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            ref={flatListRef}
+            onContentSizeChange={() => {
+              autoScrollToEnd();
+            }}
           />
         ) : (
           ""
@@ -270,6 +313,7 @@ const Message = ({ route }) => {
           <TextInput
             className="flex-1 py-2 px-4 text-lg font-normal mr-2 rounded-xl border border-gray-400"
             onChangeText={(value) => setMessage(value)}
+            value={message}
           />
 
           <Ionicons

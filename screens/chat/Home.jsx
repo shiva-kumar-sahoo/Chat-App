@@ -1,5 +1,5 @@
 import { View, Text, Pressable, FlatList } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Feather } from "@expo/vector-icons";
 import { AuthContext } from "../../context/AuthContext";
 import ChatComponent from "../../components/ChatComponent";

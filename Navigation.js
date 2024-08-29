@@ -41,7 +41,7 @@ const AuthCheck = () => {
   }
   return (
     <NavigationContainer>
-      {userInfo != null ? <HomeStack /> : <AuthScreenStack />}
+      {userInfo ? <HomeStack /> : <AuthScreenStack />}
     </NavigationContainer>
   );
 };

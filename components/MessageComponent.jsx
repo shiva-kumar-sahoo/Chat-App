@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import React from "react";
 
 const MessageComponent = ({ item }) => {
   return (
@@ -9,7 +10,7 @@ const MessageComponent = ({ item }) => {
           <View
             className={`${
               item?.source == "from" ? "bg-slate-200" : "bg-green-200"
-            }  p-4 rounded-lg`}
+            } p-4 rounded-lg`}
           >
             <Text className="font-normal text-base">{item.text}</Text>
           </View>
