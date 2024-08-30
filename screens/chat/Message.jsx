@@ -3,257 +3,74 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MessageComponent from "../../components/MessageComponent";
 import { AuthContext } from "../../context/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
   const [user, setUser] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const { name, id } = route.params;
 
-  const initialChats = [
-    {
-      id: "1",
-      source: "from",
-      text: "Hey Jhon, how's it going?",
-      time: "09:15",
-      user: "Bob",
-    },
-    {
-      id: "2",
-      source: "to",
-      text: "All good, Bob! How about you?",
-      time: "09:16",
-      user: "Jhon",
-    },
-    {
-      id: "3",
-      source: "from",
-      text: "I'm doing well, just finished some work.",
-      time: "09:18",
-      user: "Bob",
-    },
-    {
-      id: "4",
-      source: "to",
-      text: "Nice! What project are you working on?",
-      time: "09:19",
-      user: "Jhon",
-    },
-    {
-      id: "5",
-      source: "from",
-      text: "It's a new app for managing tasks. Pretty exciting!",
-      time: "09:21",
-      user: "Bob",
-    },
-    {
-      id: "6",
-      source: "to",
-      text: "Sounds interesting. Need any help?",
-      time: "09:22",
-      user: "Jhon",
-    },
-    {
-      id: "7",
-      source: "from",
-      text: "Maybe later, I'll keep you posted.",
-      time: "09:24",
-      user: "Bob",
-    },
-    {
-      id: "8",
-      source: "to",
-      text: "Sure, just let me know!",
-      time: "09:25",
-      user: "Jhon",
-    },
-    {
-      id: "9",
-      source: "from",
-      text: "Will do. By the way, have you seen the latest episode?",
-      time: "09:27",
-      user: "Bob",
-    },
-    {
-      id: "10",
-      source: "to",
-      text: "Not yet! No spoilers please 😅",
-      time: "09:28",
-      user: "Jhon",
-    },
-    {
-      id: "11",
-      source: "from",
-      text: "Haha, don't worry! Just wanted to say it's amazing.",
-      time: "09:30",
-      user: "Bob",
-    },
-    {
-      id: "12",
-      source: "to",
-      text: "Now I'm even more excited to watch it!",
-      time: "09:31",
-      user: "Jhon",
-    },
-    {
-      id: "13",
-      source: "from",
-      text: "You should! It's worth the time.",
-      time: "09:33",
-      user: "Bob",
-    },
-    {
-      id: "14",
-      source: "to",
-      text: "Will do tonight!",
-      time: "09:34",
-      user: "Jhon",
-    },
-    {
-      id: "15",
-      source: "from",
-      text: "Great! Let me know your thoughts.",
-      time: "09:36",
-      user: "Bob",
-    },
-    {
-      id: "16",
-      source: "to",
-      text: "Definitely. What else is new with you?",
-      time: "09:37",
-      user: "Jhon",
-    },
-    {
-      id: "17",
-      source: "from",
-      text: "Not much, just trying to stay productive.",
-      time: "09:39",
-      user: "Bob",
-    },
-    {
-      id: "18",
-      source: "to",
-      text: "Same here. Trying to balance work and personal stuff.",
-      time: "09:40",
-      user: "Jhon",
-    },
-    {
-      id: "19",
-      source: "from",
-      text: "It’s tough but doable! Keep pushing.",
-      time: "09:42",
-      user: "Bob",
-    },
-    {
-      id: "20",
-      source: "to",
-      text: "Thanks, Bob. You too!",
-      time: "09:43",
-      user: "Jhon",
-    },
-    {
-      id: "21",
-      source: "from",
-      text: "Any weekend plans?",
-      time: "09:45",
-      user: "Bob",
-    },
-    {
-      id: "22",
-      source: "to",
-      text: "Just chilling at home. You?",
-      time: "09:46",
-      user: "Jhon",
-    },
-    {
-      id: "23",
-      source: "from",
-      text: "Might go hiking if the weather's good.",
-      time: "09:48",
-      user: "Bob",
-    },
-    {
-      id: "24",
-      source: "to",
-      text: "That sounds fun! Enjoy the outdoors.",
-      time: "09:49",
-      user: "Jhon",
-    },
-    {
-      id: "25",
-      source: "from",
-      text: "Thanks! Maybe you can join next time.",
-      time: "09:51",
-      user: "Bob",
-    },
-    {
-      id: "26",
-      source: "to",
-      text: "I'd love to! Let's plan something.",
-      time: "09:52",
-      user: "Jhon",
-    },
-    {
-      id: "27",
-      source: "from",
-      text: "For sure. Let’s catch up later.",
-      time: "09:54",
-      user: "Bob",
-    },
-    {
-      id: "28",
-      source: "to",
-      text: "Alright, talk soon!",
-      time: "09:55",
-      user: "Jhon",
-    },
-    {
-      id: "29",
-      source: "from",
-      text: "See ya!",
-      time: "09:57",
-      user: "Bob",
-    },
-    {
-      id: "30",
-      source: "to",
-      text: "Bye!",
-      time: "09:58",
-      user: "Jhon",
-    },
-  ];
   const { userInfo, socket } = useContext(AuthContext);
-  const [chatMessages, setChatMessages] = useState(initialChats);
+  const [chatMessages, setChatMessages] = useState([]);
   const flatListRef = useRef(null);
+
+  const getContactChat = async (id) => {
+    const contactList = await AsyncStorage.getItem("myContactList");
+    const parseChats = JSON.parse(contactList);
+    setUserEmail(parseChats[id - 1].email);
+    const userChat = parseChats[id - 1]?.messages;
+    setChatMessages(userChat);
+  };
+
   const getCurrentTime = () => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-  const handleSendBtn = () => {
-    socket.emit("send-message", {
-      from: userInfo,
-      to: "email@email.com",
-      // to: userInfo,
-      message: message,
-    });
-
+  const handleSendBtn = async () => {
     const newMessage = {
       id: `${Date.now()}-${chatMessages.length + 1}`,
       source: "to",
       text: message,
       time: getCurrentTime(),
-      user: "Jhon",
+      user: "John",
     };
 
-    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    const updatedMessages = [...chatMessages, newMessage];
+
+    socket.emit("send-message", {
+      from: userInfo,
+      to: userEmail,
+      message: message,
+    });
+
+    setChatMessages(updatedMessages);
+    await updateContactChatInStorage(id, updatedMessages);
 
     setMessage("");
     autoScrollToEnd();
   };
-  const autoScrollToEnd = () => {
-    flatListRef.current.scrollToEnd();
+
+  const updateContactChatInStorage = async (id, updatedMessages) => {
+    try {
+      const contactList = await AsyncStorage.getItem("myContactList");
+      const parsedChats = JSON.parse(contactList);
+
+      parsedChats[id - 1].messages = updatedMessages;
+
+      await AsyncStorage.setItem("myContactList", JSON.stringify(parsedChats));
+    } catch (error) {
+      console.error("Failed to update chat messages in storage:", error);
+    }
   };
-  const handleReceiveMessage = (incomingMessage) => {
+
+  const autoScrollToEnd = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+  const handleReceiveMessage = async (incomingMessage) => {
     const newMessage = {
       id: `${Date.now()}-${chatMessages.length + 1}`,
       source: "from",
@@ -261,16 +78,18 @@ const Message = ({ route }) => {
       time: getCurrentTime(),
       user: incomingMessage.from,
     };
-    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
-    autoScrollToEnd();
 
-    return () => {
-      socket.off("received-message", handleReceiveMessage);
-    };
+    const updatedMessages = [...chatMessages, newMessage];
+    setChatMessages(updatedMessages);
+
+    await updateContactChatInStorage(id, updatedMessages);
+
+    autoScrollToEnd();
   };
   useEffect(() => {
-    if (!socket) return;
+    getContactChat(id);
 
+    if (!socket) return;
     socket.on("received-message", handleReceiveMessage);
 
     return () => {
@@ -291,7 +110,7 @@ const Message = ({ route }) => {
         </View>
       </View>
       <View className="flex-1">
-        {initialChats ? (
+        {chatMessages && chatMessages.length > 0 ? (
           <FlatList
             data={chatMessages}
             renderItem={({ item }) => (
@@ -305,7 +124,9 @@ const Message = ({ route }) => {
             }}
           />
         ) : (
-          ""
+          <View className="flex items-center mt-10">
+            <Text>No Messages</Text>
+          </View>
         )}
       </View>
       <View className="flex justify-center w-full px-2 mb-5 my-4">

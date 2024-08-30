@@ -8,7 +8,7 @@ const ChatComponent = ({ item }) => {
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
-    setMessages(item.messages[item.messages.length - 1]);
+    setMessages(item?.messages[item?.messages?.length - 1]);
   }, []);
   const handleNavigation = () => {
     navigation.navigate("Message", {
@@ -29,7 +29,7 @@ const ChatComponent = ({ item }) => {
           className="mr-4"
         />
 
-        <View className="flex-1 flex-row justify-between">
+        <View className="flex-1 flex-row justify-between ml-2">
           <View>
             <Text className="text-lg mb-1 font-bold">{item.name}</Text>
 
