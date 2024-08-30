@@ -1,25 +1,29 @@
-import { View, Text, Pressable, TextInput, FlatList } from "react-native";
+import { View, Text, TextInput, FlatList } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MessageComponent from "../../components/MessageComponent";
 import { AuthContext } from "../../context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
-  const [user, setUser] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const { name, id } = route.params;
-
   const { userInfo, socket } = useContext(AuthContext);
   const [chatMessages, setChatMessages] = useState([]);
   const flatListRef = useRef(null);
 
   const getContactChat = async (id) => {
-    const contactList = await AsyncStorage.getItem("myContactList");
-    const parseChats = JSON.parse(contactList);
-    setUserEmail(parseChats[id - 1].email);
-    const userChat = parseChats[id - 1]?.messages;
-    setChatMessages(userChat);
+    try {
+      const contactList = await AsyncStorage.getItem("myContactList");
+      const parsedChats = JSON.parse(contactList);
+      const selectedChat = parsedChats[id - 1];
+      setUserEmail(selectedChat.email);
+      const userChat = selectedChat?.messages || [];
+      setChatMessages(userChat);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+    }
   };
 
   const getCurrentTime = () => {
@@ -28,16 +32,32 @@ const Message = ({ route }) => {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   };
+
+  const updateContactChatInStorage = async (id, newMessage) => {
+    try {
+      const contactList = await AsyncStorage.getItem("myContactList");
+      const parsedChats = JSON.parse(contactList);
+
+      // Append the new message to the existing messages array
+      parsedChats[id - 1].messages.push(newMessage);
+
+      // Save updated chats back to AsyncStorage
+      await AsyncStorage.setItem("myContactList", JSON.stringify(parsedChats));
+    } catch (error) {
+      console.error("Failed to update chat messages in storage:", error);
+    }
+  };
+
   const handleSendBtn = async () => {
+    if (!message.trim()) return;
+
     const newMessage = {
       id: `${Date.now()}-${chatMessages.length + 1}`,
       source: "to",
       text: message,
       time: getCurrentTime(),
-      user: "John",
+      user: name,
     };
-
-    const updatedMessages = [...chatMessages, newMessage];
 
     socket.emit("send-message", {
       from: userInfo,
@@ -45,31 +65,13 @@ const Message = ({ route }) => {
       message: message,
     });
 
-    setChatMessages(updatedMessages);
-    await updateContactChatInStorage(id, updatedMessages);
+    await updateContactChatInStorage(id, newMessage);
+    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
 
     setMessage("");
     autoScrollToEnd();
   };
 
-  const updateContactChatInStorage = async (id, updatedMessages) => {
-    try {
-      const contactList = await AsyncStorage.getItem("myContactList");
-      const parsedChats = JSON.parse(contactList);
-
-      parsedChats[id - 1].messages = updatedMessages;
-
-      await AsyncStorage.setItem("myContactList", JSON.stringify(parsedChats));
-    } catch (error) {
-      console.error("Failed to update chat messages in storage:", error);
-    }
-  };
-
-  const autoScrollToEnd = () => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated: true });
-    }
-  };
   const handleReceiveMessage = async (incomingMessage) => {
     const newMessage = {
       id: `${Date.now()}-${chatMessages.length + 1}`,
@@ -79,13 +81,19 @@ const Message = ({ route }) => {
       user: incomingMessage.from,
     };
 
-    const updatedMessages = [...chatMessages, newMessage];
-    setChatMessages(updatedMessages);
+    setChatMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    await updateContactChatInStorage(id, updatedMessages);
+    await updateContactChatInStorage(id, newMessage);
 
     autoScrollToEnd();
   };
+
+  const autoScrollToEnd = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
   useEffect(() => {
     getContactChat(id);
 
@@ -96,16 +104,12 @@ const Message = ({ route }) => {
       socket.off("received-message", handleReceiveMessage);
     };
   }, [socket]);
+
   return (
     <View className="flex-1">
       <View className="py-5 px-4 bg-green-200 rounded-b-2xl mb-4">
         <View className="flex flex-row items-center justify-between">
-          <Ionicons
-            name="person-circle-outline"
-            size={45}
-            color="grey"
-            className="mr-4"
-          />
+          <Ionicons name="person-circle-outline" size={45} color="grey" />
           <Text className="text-xl font-semibold">{name}</Text>
         </View>
       </View>
@@ -114,14 +118,12 @@ const Message = ({ route }) => {
           <FlatList
             data={chatMessages}
             renderItem={({ item }) => (
-              <MessageComponent item={item} user={user} />
+              <MessageComponent item={item} user={userInfo} />
             )}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             ref={flatListRef}
-            onContentSizeChange={() => {
-              autoScrollToEnd();
-            }}
+            onContentSizeChange={autoScrollToEnd}
           />
         ) : (
           <View className="flex items-center mt-10">
