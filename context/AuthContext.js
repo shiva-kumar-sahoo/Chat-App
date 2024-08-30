@@ -17,6 +17,14 @@ const AuthProvider = ({ children }) => {
       console.log(error);
     }
   };
+  const userSignup = async (email) => {
+    try {
+      await AsyncStorage.setItem("email", email);
+      setUserInfo(email);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const userLogout = async () => {
     await AsyncStorage.removeItem("email");
@@ -44,6 +52,7 @@ const AuthProvider = ({ children }) => {
         isLoading,
         userInfo,
         userLogin,
+        userSignup,
         userLogout,
         socket,
       }}

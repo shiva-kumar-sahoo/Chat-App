@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import storeUserInfo from "../../lib/storeUserInfo";
 import { useNavigation } from "@react-navigation/native";
+import { AuthContext } from "../../context/AuthContext";
 
 const Signup = () => {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const { userSignup } = useContext(AuthContext);
 
   const navigation = useNavigation();
 
   const handleSignUp = async () => {
     if (email && password) {
-      await storeUserInfo(email);
+      await userSignup(email);
     } else {
       Alert.alert("All field is required.");
     }
