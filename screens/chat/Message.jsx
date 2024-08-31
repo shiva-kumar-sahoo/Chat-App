@@ -1,9 +1,12 @@
-import { View, Text, TextInput, FlatList } from "react-native";
+import { View, Text, TextInput, FlatList, ToastAndroid } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import MessageComponent from "../../components/MessageComponent";
 import { AuthContext } from "../../context/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
@@ -57,12 +60,12 @@ const Message = ({ route }) => {
       text: message,
       time: getCurrentTime(),
       user: name,
+      type: "text",
     };
-
     socket.emit("send-message", {
       from: userInfo,
       to: userEmail,
-      message: message,
+      message: newMessage,
     });
 
     await updateContactChatInStorage(id, newMessage);
@@ -76,9 +79,11 @@ const Message = ({ route }) => {
     const newMessage = {
       id: `${Date.now()}-${chatMessages.length + 1}`,
       source: "from",
-      text: incomingMessage.message,
+      text: incomingMessage.message.text || "",
+      image: incomingMessage.message.image || null,
       time: getCurrentTime(),
       user: incomingMessage.from,
+      type: incomingMessage.message.type,
     };
 
     setChatMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -93,7 +98,48 @@ const Message = ({ route }) => {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
+  const handleCameraBtn = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
+      const base64Image = await FileSystem.readAsStringAsync(
+        manipulatedImage.uri,
+        {
+          encoding: FileSystem.EncodingType.Base64,
+        }
+      );
+
+      const newMessage = {
+        id: `${Date.now()}-${chatMessages.length + 1}`,
+        source: "to",
+        image: base64Image,
+        time: getCurrentTime(),
+        user: name,
+        type: "image",
+      };
+
+      await socket.emit("send-message", {
+        from: userInfo,
+        to: userEmail,
+        message: newMessage,
+      });
+
+      await updateContactChatInStorage(id, newMessage);
+      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+
+      autoScrollToEnd();
+    } else {
+      ToastAndroid.show("Image Not Captured", ToastAndroid.SHORT);
+    }
+  };
   useEffect(() => {
     getContactChat(id);
 
@@ -132,19 +178,26 @@ const Message = ({ route }) => {
         )}
       </View>
       <View className="flex justify-center w-full px-2 mb-5 my-4">
-        <View className="flex flex-row items-center">
+        <View className="flex flex-row items-center justify-between">
           <TextInput
             className="flex-1 py-2 px-4 text-lg font-normal mr-2 rounded-xl border border-gray-400"
             onChangeText={(value) => setMessage(value)}
             value={message}
           />
-
-          <Ionicons
-            name="send"
-            size={35}
-            color="#4ade80"
-            onPress={handleSendBtn}
-          />
+          <View className="flex flex-row items-center justify-between gap-x-4">
+            <Feather
+              name="camera"
+              size={28}
+              color="grey"
+              onPress={handleCameraBtn}
+            />
+            <Ionicons
+              name="send"
+              size={35}
+              color="#4ade80"
+              onPress={handleSendBtn}
+            />
+          </View>
         </View>
       </View>
     </View>
