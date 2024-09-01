@@ -13,7 +13,7 @@ const useSocket = () => {
         email: storedUserEmail,
       };
 
-      const newSocket = io("http://192.168.1.70:8000", {
+      const newSocket = io("http://192.168.1.68:8000", {
         query: userInfo,
         reconnection: true,
         reconnectionAttempts: 5,
