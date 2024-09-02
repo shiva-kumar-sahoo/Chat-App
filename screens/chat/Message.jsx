@@ -1,4 +1,12 @@
-import { View, Text, TextInput, FlatList, ToastAndroid } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  ToastAndroid,
+  Image,
+  Alert,
+} from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import MessageComponent from "../../components/MessageComponent";
@@ -8,6 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import useSocket from "../../hooks/useSocket";
+import { useNavigation } from "@react-navigation/native";
 
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
@@ -17,6 +26,7 @@ const Message = ({ route }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const flatListRef = useRef(null);
   const socket = useSocket();
+  const navigation = useNavigation();
 
   const getContactChat = async (id) => {
     try {
@@ -155,10 +165,47 @@ const Message = ({ route }) => {
 
   return (
     <View className="flex-1">
-      <View className="py-5 px-4 bg-green-200 rounded-b-2xl mb-4">
+      <View className="py-2 px-4">
         <View className="flex flex-row items-center justify-between">
-          <Ionicons name="person-circle-outline" size={45} color="grey" />
-          <Text className="text-xl font-semibold">{name}</Text>
+          <View className="flex flex-row items-center gap-x-1">
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="black"
+              onPress={() => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "Home" }],
+                });
+              }}
+            />
+            <Image
+              source={require("../../assets/user.png")}
+              className="w-20 h-20"
+            />
+            <View>
+              <Text className="text-xl font-semibold">{name}</Text>
+              <Text className="text-sm text-gray-400">Active now</Text>
+            </View>
+          </View>
+          <View className="flex-1 flex-row justify-end gap-x-4">
+            <Feather
+              name="phone"
+              size={24}
+              color="black"
+              onPress={() => {
+                Alert.alert("Phone Call", "Feature will implement soon");
+              }}
+            />
+            <Feather
+              name="video"
+              size={24}
+              color="black"
+              onPress={() => {
+                Alert.alert("Video Call", "Feature will implement soon");
+              }}
+            />
+          </View>
         </View>
       </View>
       <View className="flex-1">

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, FlatList } from "react-native";
+import { View, Text, Pressable, FlatList, Alert } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import { AuthContext } from "../../context/AuthContext";
@@ -31,12 +31,17 @@ const Home = () => {
         <View className="bg-[#F7F7F7] flex flex-row items-center justify-between px-5 w-full h-full">
           <View>
             <Text className="font-bold text-2xl text-green-500">
-              Secure-Chat
+              SecureChat
             </Text>
           </View>
-          <Pressable onPress={() => console.log("Button Pressed!")}>
-            <Feather name="edit" size={24} color="green" />
-          </Pressable>
+          <Feather
+            name="search"
+            size={28}
+            color="black"
+            onPress={() => {
+              Alert.alert("search");
+            }}
+          />
         </View>
       </View>
       <View className="px-2">
