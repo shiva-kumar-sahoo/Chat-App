@@ -1,13 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useEffect, useState } from "react";
-import useSocket from "../hooks/useSocket";
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
-  const socket = useSocket();
 
   const userLogin = async (email) => {
     try {
@@ -54,7 +52,6 @@ const AuthProvider = ({ children }) => {
         userLogin,
         userSignup,
         userLogout,
-        socket,
       }}
     >
       {children}

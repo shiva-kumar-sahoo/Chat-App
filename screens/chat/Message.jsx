@@ -7,14 +7,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
+import useSocket from "../../hooks/useSocket";
 
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const { name, id } = route.params;
-  const { userInfo, socket } = useContext(AuthContext);
+  const { userInfo } = useContext(AuthContext);
   const [chatMessages, setChatMessages] = useState([]);
   const flatListRef = useRef(null);
+  const socket = useSocket();
 
   const getContactChat = async (id) => {
     try {

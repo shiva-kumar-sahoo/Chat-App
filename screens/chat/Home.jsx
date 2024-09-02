@@ -5,11 +5,13 @@ import { AuthContext } from "../../context/AuthContext";
 import ChatComponent from "../../components/ChatComponent";
 import AddChat from "../../components/AddChat";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useSocket from "../../hooks/useSocket";
 
 const Home = () => {
   const { userLogout } = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const [chatContactListData, setChatContactListData] = useState(null);
+  const socket = useSocket();
   const getAllChatContactData = async () => {
     const chatContactList = await AsyncStorage.getItem("myContactList");
     const parseContactList = JSON.parse(chatContactList);
