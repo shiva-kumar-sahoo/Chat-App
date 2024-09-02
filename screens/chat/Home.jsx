@@ -1,4 +1,4 @@
-import { View, Text, Pressable, FlatList, Alert } from "react-native";
+import { View, Text, FlatList, Alert } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import { AuthContext } from "../../context/AuthContext";

@@ -21,6 +21,7 @@ import { useNavigation } from "@react-navigation/native";
 const Message = ({ route }) => {
   const [message, setMessage] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [userActiveStatus, setUserActiveStatus] = useState(false);
   const { name, id } = route.params;
   const { userInfo } = useContext(AuthContext);
   const [chatMessages, setChatMessages] = useState([]);
@@ -110,6 +111,7 @@ const Message = ({ route }) => {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
+
   const handleCameraBtn = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -152,14 +154,27 @@ const Message = ({ route }) => {
       ToastAndroid.show("Image Not Captured", ToastAndroid.SHORT);
     }
   };
+
+  const requestCheckActiveStatus = async () => {
+    if (socket && userEmail) {
+      socket.emit("request-check-active-status", { userEmail });
+    }
+  };
+
+  const handleReceiveActiveStatus = async (status) => {
+    setUserActiveStatus(status.isActive);
+  };
+
   useEffect(() => {
     getContactChat(id);
+    requestCheckActiveStatus();
 
     if (!socket) return;
     socket.on("received-message", handleReceiveMessage);
-
+    socket.on("recive-active-status", handleReceiveActiveStatus);
     return () => {
       socket.off("received-message", handleReceiveMessage);
+      socket.off("recive-active-status", handleReceiveActiveStatus);
     };
   }, [socket]);
 
@@ -185,7 +200,13 @@ const Message = ({ route }) => {
             />
             <View>
               <Text className="text-xl font-semibold">{name}</Text>
-              <Text className="text-sm text-gray-400">Active now</Text>
+              <Text className="text-sm text-gray-400">
+                {userActiveStatus ? (
+                  <Text className="text-green-500">Active now</Text>
+                ) : (
+                  <Text className="text-gray-400">Not Active</Text>
+                )}
+              </Text>
             </View>
           </View>
           <View className="flex-1 flex-row justify-end gap-x-4">
