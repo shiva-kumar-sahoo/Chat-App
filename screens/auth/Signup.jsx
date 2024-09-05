@@ -20,19 +20,29 @@ const Signup = () => {
   return (
     <View className="flex items-center justify-center bg-[#EEF1FF] p-3 w-full h-full">
       <Text className="mb-10 text-xl font-bold text-center">Sign Up</Text>
-      <View className="flex justify-center items-center w-full gap-4">
-        <TextInput
-          autoCorrect={false}
-          placeholder="Enter your email"
-          onChangeText={(value) => setEmail(value)}
-          className="border rounded-lg py-2 px-4 w-4/5"
-        />
-        <TextInput
-          autoCorrect={false}
-          placeholder="Enter your password"
-          onChangeText={(value) => setPassword(value)}
-          className="border rounded-lg py-2 px-4 w-4/5"
-        />
+      <View className="w-full ml-10">
+        <View className="p-4 gap-4">
+          <Text className="text-green-500 text-lg font-semibold">
+            Your Email
+          </Text>
+          <TextInput
+            autoCorrect={false}
+            placeholder="Enter your email"
+            onChangeText={(value) => setEmail(value)}
+            className="border rounded-lg py-2 px-4 w-4/5 text-base"
+          />
+        </View>
+        <View className="p-4 gap-4">
+          <Text className="text-green-500 text-lg font-semibold">
+            Your Password
+          </Text>
+          <TextInput
+            autoCorrect={false}
+            placeholder="Enter your password"
+            onChangeText={(value) => setPassword(value)}
+            className="border rounded-lg py-2 px-4 w-4/5 text-base"
+          />
+        </View>
       </View>
       <Pressable
         onPress={handleSignUp}
