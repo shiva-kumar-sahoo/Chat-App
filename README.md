@@ -1,8 +1,11 @@
 
+
 # 💬 Chat-App
 
 **Chat-App** is a real-time chat application built using React Native (Expo) and Socket.io. It allows users to engage in instant conversations with each other. 
 
+## Screenshots
+![chat-app-s1](https://github.com/user-attachments/assets/de20167c-3524-42e9-8634-390c6bbdc234)![chat-app-s2](https://github.com/user-attachments/assets/4bae43ba-85f7-4619-b084-00f653fc7df3)
 ## 🛠️ Technologies Used
 
 - **React Native**: The core framework for building the mobile app.
